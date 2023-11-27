@@ -1,14 +1,14 @@
 import UIKit
 
-class GameOverViewController: UIViewController {
+final class GameOverViewController: UIViewController {
     // MARK: - IBOutlets
     @IBOutlet weak var gameOverLabel: UILabel!
-    @IBOutlet weak var offButton: UIButton!
     @IBOutlet weak var rebootButton: UIButton!
     @IBOutlet weak var totalScoreLabel: UILabel!
     @IBOutlet weak var mainWallpaper: UIImageView!
     
     // MARK: - let/var
+    static let identifier = "GameOverViewController"
     var crashSubmarineImageView = UIImageView()
     var screenHeight: CGFloat = 0
     var screenWidth: CGFloat = 0
@@ -20,20 +20,15 @@ class GameOverViewController: UIViewController {
         labelsSetting()
         addCrashSubmarine()
         self.view.sendSubviewToBack(mainWallpaper)
-//        print("You score: \(totalScore)")
     }
     
      // MARK: - ABActions
-    @IBAction func offButtonPressed(_ sender: UIButton) {
-        exit(-1)
-    }
-    
     @IBAction func homeButtonPressed(_ sender: UIButton) {
         self.navigationController?.popToRootViewController(animated: true)
     }
     
     @IBAction func rebootButtonPressed(_ sender: UIButton) {
-        guard let controller = self.storyboard?.instantiateViewController(withIdentifier: "GameViewController") as? GameViewController else { return }
+        guard let controller = self.storyboard?.instantiateViewController(withIdentifier: GameViewController.identifier) as? GameViewController else { return }
         self.navigationController?.pushViewController(controller, animated: true)
     }
     
@@ -46,25 +41,21 @@ class GameOverViewController: UIViewController {
         self.totalScoreLabel.dropShadow()
         
         func textOptions() {
-               // шаблон с атрибутами/настройками текста
                let attributes: [NSAttributedString.Key: Any] = [
-                NSAttributedString.Key.foregroundColor: UIColor.systemGreen, // цвет шрифта
-//                   NSAttributedString.Key.backgroundColor: UIColor.yellow, // цвет выделения текста
-                   NSAttributedString.Key.underlineStyle: NSUnderlineStyle.patternDash.rawValue // стиль подчеркивания текста
+                NSAttributedString.Key.foregroundColor: UIColor.systemGreen,
+                   NSAttributedString.Key.underlineStyle: NSUnderlineStyle.patternDash.rawValue
                ]
-            let attrString = NSMutableAttributedString(string: "You score: ", attributes: attributes) // создаем строковую константу с присвоением текста и применением атрибутов. NSMutableAttributedString прописываем для того чтобы добавить текст через append.
+            let attrString = NSMutableAttributedString(string: "You score: ", attributes: attributes)
                
-               // второй шаблон с атрибутами
                let secondAttributes: [NSAttributedString.Key: Any] = [
-                NSAttributedString.Key.foregroundColor: UIColor.systemRed, // цвет шрифта
-//                   NSAttributedString.Key.backgroundColor: UIColor.gray, // цвет выделения текста
-                   NSAttributedString.Key.underlineStyle: NSUnderlineStyle.patternDot.rawValue  // стиль подчеркивания текста
+                NSAttributedString.Key.foregroundColor: UIColor.systemRed,
+                   NSAttributedString.Key.underlineStyle: NSUnderlineStyle.patternDot.rawValue
                ]
             let newAttrString = NSAttributedString(string: String(self.totalScore), attributes: secondAttributes)
-               attrString.append(newAttrString) // добавление второй части текста к первой
-               let firstFont = UIFont(name: "Rockwell-Bold", size: 25) // выбор шрифта и его размера
-            self.totalScoreLabel.font = firstFont // присвоить шрифт
-               self.totalScoreLabel.attributedText = attrString // присвоить текст с атрибутами
+               attrString.append(newAttrString)
+               let firstFont = UIFont(name: "Rockwell-Bold", size: 25)
+            self.totalScoreLabel.font = firstFont 
+               self.totalScoreLabel.attributedText = attrString
             
            }
     }

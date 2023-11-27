@@ -7,15 +7,15 @@ enum Direction {
 }
 
 import UIKit
-class GameViewController: UIViewController {
+final class GameViewController: UIViewController {
     
     // MARK: - IBOutlets
     @IBOutlet weak var ascentButton:UIButton!
     @IBOutlet weak var diveButton: UIButton!
     @IBOutlet weak var scoreLabel: UILabel!
-    @IBOutlet weak var gameMenuButton: UIImageView!
     
     // MARK: - let/var
+    static let identifier = "GameViewController"
     
     // submarine settings
     let submarineImageView = UIImageView()
@@ -48,13 +48,12 @@ class GameViewController: UIViewController {
     var timerOxygenScale = Timer()
     let upperBound = screenHeight * 0.2
     var timerIntersect = Timer()
-    var submarineInWater = true
+    var isSubmarineInWater = true
     var difficulty = SettingsDifficultyGame(difficulty: .normal)
     
     // MARK: - lifecicle funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-        // funcs
         selectDifficultyGame()
         checkIntersect()
         createSubmarine()
@@ -63,39 +62,28 @@ class GameViewController: UIViewController {
         createBottomObstacles()
         scoring()
         addOxygenScale()
-        
-        // recognizers
-        let upMotionRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapUpMotionDetected))
-        let downMotionRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapDownMotionDetected))
-        let gameMenuRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapGameMenuDetected))
-        self.ascentButton.addGestureRecognizer(upMotionRecognizer)
-        self.diveButton.addGestureRecognizer(downMotionRecognizer)
-        self.gameMenuButton.addGestureRecognizer(gameMenuRecognizer)
-        
-        //
-        self.view.bringSubviewToFront(ascentButton)
-        self.view.bringSubviewToFront(diveButton)
-        self.view.bringSubviewToFront(diveButton)
+        setupGestures()
+        setupView()
     }
     
     // MARK: - IBActions
     @IBAction func tapUpMotionDetected() {
         self.move(direction: .up)
         
-        if submarineImageView.frame.origin.y <= upperBound + 2 && submarineInWater  {
+        if submarineImageView.frame.origin.y <= upperBound + 2 && isSubmarineInWater  {
             self.timerOxygenScale.invalidate()
             self.oxygenScale.layer.removeAllAnimations()
-            submarineInWater = false
+            isSubmarineInWater = false
             addOxygenScale()
         }
     }
     
     @IBAction func tapDownMotionDetected() {
         self.move(direction: .down)
-        if submarineInWater == false {
+        if isSubmarineInWater == false {
             addOxygenScale()
             addAnimationOxygenScale()
-            submarineInWater = true
+            isSubmarineInWater = true
         }
     }
     
@@ -104,6 +92,19 @@ class GameViewController: UIViewController {
     }
     
     // MARK: - flow funcs
+    private func setupGestures() {
+        let upMotionRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapUpMotionDetected))
+        let downMotionRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapDownMotionDetected))
+        self.ascentButton.addGestureRecognizer(upMotionRecognizer)
+        self.diveButton.addGestureRecognizer(downMotionRecognizer)
+    }
+    
+    private func setupView() {
+        self.view.bringSubviewToFront(ascentButton)
+        self.view.bringSubviewToFront(diveButton)
+        self.view.bringSubviewToFront(diveButton)
+    }
+    
     func selectDifficultyGame() {
             guard let difficulty = UserDefaults.standard.value(MainSettingsGame.self, forKey: "mainSettingsGame") else {return}
             self.difficulty = SettingsDifficultyGame(difficulty: difficulty.difficultyGame)
@@ -129,7 +130,7 @@ class GameViewController: UIViewController {
         oxygenScale.frame = CGRect(x: positionXSubmarine, y: positionYSubmarine, width: submarineWidth, height: self.submarineWidth * 0.05)
         oxygenScale.backgroundColor = .init(displayP3Red: 0.298743, green: 0.919093, blue: 0.321632, alpha: 1)
         view.addSubview(oxygenScale)
-        if submarineInWater {
+        if isSubmarineInWater {
             addAnimationOxygenScale()
         }
     }
@@ -150,7 +151,6 @@ class GameViewController: UIViewController {
         let widthFish = screenWidth * 0.1
         let fishImage = UIImage(named: "crazyFish")
         self.fishImageView.image = fishImage
-        //        self.fishImageView.backgroundColor = .blue //***
         self.view.addSubview(fishImageView)
         
         self.timerFish = Timer.scheduledTimer(withTimeInterval: difficulty.timerIntervalFish, repeats: true, block: { _ in
@@ -169,7 +169,6 @@ class GameViewController: UIViewController {
         let shipImage = UIImage(named: "destroyer")
         self.shipImageView.image = shipImage
         self.view.addSubview(shipImageView)
-//                self.shipImageView.backgroundColor = .blue
         self.timerShip = Timer.scheduledTimer(withTimeInterval: difficulty.timerIntervalShip, repeats: true, block: { _ in
             self.shipImageView.frame = CGRect(x: screenWidth, y: screenHeight * 0.01, width: widthShip, height: heightShip)
             
@@ -184,7 +183,6 @@ class GameViewController: UIViewController {
         let heightObstacles = screenHeight * 0.2
         let widthObstacles = screenWidth * 0.2
         self.view.addSubview(obstaclesImageView)
-        //        self.obstaclesImageView.backgroundColor = .blue
         self.timerBottomObstacles = Timer.scheduledTimer(withTimeInterval: difficulty.timerIntervalBottomObstacles, repeats: true, block: { _ in
             let obstaclesImage = UIImage(named: randomImageObstacles())
             self.obstaclesImageView.image = obstaclesImage
@@ -254,7 +252,7 @@ class GameViewController: UIViewController {
         timerOxygenScale.invalidate()
         timerScoreLabel.invalidate()
         timerIntersect.invalidate()        
-        guard let controller = self.storyboard?.instantiateViewController(withIdentifier: "GameOverViewController") as? GameOverViewController else { return }
+        guard let controller = self.storyboard?.instantiateViewController(withIdentifier: GameOverViewController.identifier) as? GameOverViewController else { return }
         self.navigationController?.pushViewController(controller, animated: false)
         controller.crashSubmarineImageView = self.submarineImageView
         controller.screenHeight = screenHeight

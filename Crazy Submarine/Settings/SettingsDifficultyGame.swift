@@ -6,7 +6,7 @@ enum Difficulty: Codable {
 
 import Foundation
 
-class SettingsDifficultyGame {
+final class SettingsDifficultyGame {
     
     // Settings OxygenScale
     var timeIntervalOxygenScale: Double

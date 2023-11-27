@@ -1,6 +1,6 @@
 import UIKit
 
-class SettingsViewController: UIViewController {
+final class SettingsViewController: UIViewController {
     // MARK: - IBOutlet
     @IBOutlet weak var homeButton: UIButton!
     @IBOutlet weak var submarineImageView: UIImageView!
@@ -11,6 +11,7 @@ class SettingsViewController: UIViewController {
     @IBOutlet weak var applyButton: UIButton!
     
     // MARK: - let/var
+    static let identifier = "SettingsViewController"
     static let multicolorSubmarineArray = ["submarine", "aquaSubmarine", "blueSubmarine", "greenSubmarine", "pinkSubmarine", "purpleSubmarine", "redSubmarine", "yellowSubmarine" ]
     var submarineImage = UIImage()
     var indexSubmarine = 0
@@ -23,8 +24,7 @@ class SettingsViewController: UIViewController {
         loadName()
         getIndexSubmarine()
         showImageSubmarine()
-        let choiceImageSubmarineRecognizer = UITapGestureRecognizer(target: self, action: #selector(selectionColorSubmarineButtonPressed))
-        self.submarineImageView.addGestureRecognizer(choiceImageSubmarineRecognizer)
+        setupGestures()
     }
     
     // MARK: - IBActions
@@ -33,30 +33,31 @@ class SettingsViewController: UIViewController {
     }
     
     @IBAction func applyButtonPressed(_ sender: UIButton) {
-        if let namePlayer = nameTextField.text {
-            if namePlayer.isEmpty {
+        guard let playerName = nameTextField.text else { return }
+        
+            if playerName.isEmpty {
                 alertEmptyName()
             } else {
-                self.settings.name = namePlayer
+                settings.name = playerName
                 saveSettings()
             }
-        }
+        
     }
     
     @IBAction func easyButtonPressed(_ sender: UIButton) {
-        self.settings.difficultyGame = .easy
+        settings.difficultyGame = .easy
         colorButtonSelection(colorButton: .easy)
         saveSettings()
     }
     
     @IBAction func normalButtonPressed(_ sender: UIButton) {
-        self.settings.difficultyGame = .normal
+        settings.difficultyGame = .normal
         colorButtonSelection(colorButton: .normal)
         saveSettings()
     }
     
     @IBAction func hardButtonPressed(_ sender: UIButton) {
-        self.settings.difficultyGame = .hard
+        settings.difficultyGame = .hard
         colorButtonSelection(colorButton: .hard)
         saveSettings()
     }
@@ -69,20 +70,25 @@ class SettingsViewController: UIViewController {
             indexSubmarine = 0
         }
         showImageSubmarine()
-        self.settings.indexSubmarine = self.indexSubmarine
+        settings.indexSubmarine = indexSubmarine
         saveSettings()
     }
     
     // MARK: - flow funcs
+    private func setupGestures() {
+        let choiceImageSubmarineRecognizer = UITapGestureRecognizer(target: self, action: #selector(selectionColorSubmarineButtonPressed))
+        submarineImageView.addGestureRecognizer(choiceImageSubmarineRecognizer)
+    }
+    
     func loadSaveSettings() {
         guard let mainSettings = UserDefaults.standard.value(MainSettingsGame.self, forKey: "mainSettingsGame") else { return }
-        self.settings = mainSettings
+        settings = mainSettings
         colorButtonSelection(colorButton: mainSettings.difficultyGame)
     }
     
     func loadName() {
         guard let mainSettings = UserDefaults.standard.value(MainSettingsGame.self, forKey: "mainSettingsGame") else { return }
-        self.nameTextField.text = mainSettings.name
+        nameTextField.text = mainSettings.name
     }
     
     func saveSettings() {
@@ -91,15 +97,14 @@ class SettingsViewController: UIViewController {
     
     func getIndexSubmarine() {
         guard let mainSettings = UserDefaults.standard.value(MainSettingsGame.self, forKey: "mainSettingsGame") else { return }
-        //        guard let mainSettings = UserDefaults.standard.value(MainSettingsGame.self, forKey: "mainSettingsGame") else { return }
-        self.indexSubmarine = mainSettings.indexSubmarine
+        indexSubmarine = mainSettings.indexSubmarine
     }
     
     func showImageSubmarine() {
         if let image = UIImage(named: SettingsViewController.multicolorSubmarineArray[indexSubmarine]) {
             submarineImage = image
         }
-        self.submarineImageView.image = submarineImage
+        submarineImageView.image = submarineImage
     }
     
     func colorButtonSelection(colorButton: Difficulty) {
@@ -114,23 +119,23 @@ class SettingsViewController: UIViewController {
             
         case .hard:
             defaultsColorsButtonsDifficulty()
-            self.hardButton.backgroundColor = .systemRed
+            hardButton.backgroundColor = .systemRed
         }
         
         func defaultsColorsButtonsDifficulty() {
-            self.easyButton.backgroundColor = .systemGray4
-            self.normalButton.backgroundColor = .systemGray4
-            self.hardButton.backgroundColor = .systemGray4
+            easyButton.backgroundColor = .systemGray4
+            normalButton.backgroundColor = .systemGray4
+            hardButton.backgroundColor = .systemGray4
         }
     }
     
     func alertEmptyName() {
-        let alert = UIAlertController(title: "Warning", message: "Name field is empty...", preferredStyle: .alert) // Создание алерта, задаем заголовок и текст сообщения
+        let alert = UIAlertController(title: "Warning", message: "Name field is empty...", preferredStyle: .alert)
         
-        let okAction = UIAlertAction(title: "Ok", style: .default) { _ in // создание кнопки "ОК"
+        let okAction = UIAlertAction(title: "Ok", style: .default) { _ in
         }
         
-        alert.addAction(okAction) // добавление кнопки "ОК" в алерт
+        alert.addAction(okAction) 
         present(alert, animated: true)
         
     }
